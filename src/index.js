@@ -2,8 +2,14 @@ const express = require('express')
 const mongoose = require('mongoose')
 require('dotenv').config();
 
+//Importing routes
+const userRouter = require('./routes/user');
+
 const app = express();
 const port = process.env.PORT || 9000;
+
+// Middleware
+app.use('/api/v1', userRouter);
 
 // Routes
 app.get('/', (req, res) => {
