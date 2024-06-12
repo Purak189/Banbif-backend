@@ -1,5 +1,6 @@
 version: '5.0'
 services:
+  # MongoDB services
   mongo:
     image: mongo:7.0
     environment:
@@ -9,6 +10,16 @@ services:
       - 27017:27017
     volumes:
       - mongodata:/data/db
+  # Node API service
+  api:
+    build: .
+    ports: 
+     - 9000:9000
+    environment:
+      MONGODB_URL: mongodb://root:banbifDb2024@mongo:27017/banbifDb?authSource=admin
+      NAME: BanbifApi
+    depends_on:
+      - mongo
 volumes:
   mongodata:
     driver: local

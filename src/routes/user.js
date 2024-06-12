@@ -6,7 +6,7 @@ const router = express.Router();
 
 // Create user
 router.post('/user', (req, res) => {
-    const user = userSchema(req.body);
+    const user = new userSchema(req.body);
     user
         .save()
         .then((data) => res.json(data))
