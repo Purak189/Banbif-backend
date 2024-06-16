@@ -4,6 +4,7 @@ require('dotenv').config();
 
 //Importing routes
 const userRouter = require('./routes/user');
+const transactionRouter = require('./routes/transaction');
 
 const app = express();
 const port = process.env.PORT || 9000;
@@ -11,6 +12,7 @@ const port = process.env.PORT || 9000;
 // Middleware
 app.use(express.json());
 app.use('/api/v1', userRouter);
+app.use('/api/v1', transactionRouter);
 
 // Routes
 app.get('/', (req, res) => {
