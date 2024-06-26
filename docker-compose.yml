@@ -1,6 +1,5 @@
 version: '5.0'
 services:
-  # MongoDB services
   mongo:
     image: mongo:7.0
     environment:
@@ -10,7 +9,7 @@ services:
       - 27017:27017
     volumes:
       - mongodata:/data/db
-  # Node API service
+
   api:
     build: .
     ports: 
@@ -20,6 +19,9 @@ services:
       NAME: BanbifApi
     depends_on:
       - mongo
+    volumes:
+      - C:/Users/Asus/Sistemas Operativos/banbif-backend/Banbif-backend/uploads:/app/uploads
+
 volumes:
   mongodata:
     driver: local

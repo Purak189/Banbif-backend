@@ -1,17 +1,48 @@
 const express = require("express");
+const bcrypt = require("bcryptjs");
+const jwt = require("jsonwebtoken");
 const userSchema = require("../models/user");
+const multer = require('multer');
+const path = require('path');
+
+//Configurar Multer para multimedia
+const storage = multer.diskStorage({
+    destination: function(req, file, cb) {
+      cb(null, 'uploads/');
+    },
+    filename: function(req, file, cb) {
+        cb(null, file.fieldname + '-' + Date.now() + path.extname(file.originalname))
+    }
+  });
+  
+const upload = multer({ storage: storage });
+
 
 // Importing the user controller
 const router = express.Router();
 
+const getUserByEmail = require('../services/user'); 
+
 // Create user
-router.post('/user', (req, res) => {
-    const user = new userSchema(req.body);
-    user
-        .save()
-        .then((data) => res.json(data))
-        .catch((error) => res.json({message: error}))
-})
+router.post('/user', async (req, res) => {
+    try {
+        // Generar salt y hashear la contraseña
+        const salt = await bcrypt.genSalt(10);
+        const hashedPassword = await bcrypt.hash(req.body.password, salt);
+
+        // Crear el usuario con la contraseña hasheada
+        const user = new userSchema({
+            ...req.body,
+            password: hashedPassword,
+        });
+
+        // Guardar el usuario en la base de datos
+        const data = await user.save();
+        res.json(data);
+    } catch (error) {
+        res.json({ message: error });
+    }
+});
 
 // Get all users
 router.get('/user', (req, res) => {
@@ -30,14 +61,21 @@ router.get('/user/:id', (req, res) => {
 })
 
 // Update a user
-router.put('/user/:id', (req, res) => {
+router.put('/user/:id', upload.single('profilePicture'), (req, res) => {
     const { id } = req.params;
-    const { phoneNumber, profilePicture } = req.body;
+    const { phoneNumber } = req.body;
+    const profilePicture = req.file ? req.file.path : null;
+  
+    let updateData = { phoneNumber };
+    if (profilePicture) {
+      updateData.profilePicture = profilePicture;
+    }
+  
     userSchema
-    .updateOne({ _id: id }, { $set: { phoneNumber, profilePicture }})
-    .then((data) => res.json(data))
-    .catch((error) => res.json({message: error}))
-})
+      .updateOne({ _id: id }, { $set: updateData })
+      .then((data) => res.json(data))
+      .catch((error) => res.json({ message: error }));
+  });
 
 // Delete a user
 router.delete('/user/:id', (req, res) => {
@@ -47,5 +85,29 @@ router.delete('/user/:id', (req, res) => {
     .then((data) => res.json(data))
     .catch((error) => res.json({message: error}))
 })
+
+
+router.post('/sign-in', async (req, res) => {
+    try {
+      const { email, password } = req.body;
+  
+      const user = await getUserByEmail(email);
+      if (!user) {
+        return res.status(404).send('Usuario no encontrado');
+      }
+
+      const isMatch = await bcrypt.compare(password, user.password);
+      if (!isMatch) {
+        return res.status(401).send('Contraseña incorrecta');
+      }
+  
+      const token = jwt.sign({ id: user.id }, 'banbifBDTok$nPa$%', { expiresIn: '1h' });
+  
+      res.send({ token, userId: user.id });
+    } catch (error) {
+      console.error(error);
+      res.status(500).send('Error en el servidor');
+    }
+  });
 
 module.exports = router;

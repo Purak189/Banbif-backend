@@ -8,8 +8,9 @@ const userSchema = new mongoose.Schema({
     email: {
         type: String,
         required: true,
+        unique: true
     },
-    passwordHash : {
+    password : {
         type: String,
         required: true
     },
@@ -18,10 +19,8 @@ const userSchema = new mongoose.Schema({
         required: true
     },
     address: {
-        street: String,
-        city: String,
-        postalCode: String,
-        country: String
+        type: String,
+        required: true
     },
     profilePicture: {
         type: String,
