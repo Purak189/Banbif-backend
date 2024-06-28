@@ -20,7 +20,7 @@ services:
     depends_on:
       - mongo
     volumes:
-      - C:/Users/Asus/Sistemas Operativos/banbif-backend/Banbif-backend/uploads:/app/uploads
+      - C:/Users/Asus/SistemasOperativos/banbif-backend/Banbif-backend/uploadsFiles:/app/uploadsFiles
 
 volumes:
   mongodata:
